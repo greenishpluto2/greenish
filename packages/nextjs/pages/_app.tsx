@@ -14,6 +14,7 @@ import { useGlobalState } from "~~/services/store/store";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 import { appChains } from "~~/services/web3/wagmiConnectors";
 import "~~/styles/globals.css";
+import { Web3Modal } from "../context/Web3Modal";
 
 const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
   const price = useNativeCurrencyPrice();
@@ -34,6 +35,7 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
 
   return (
     <WagmiConfig config={wagmiConfig}>
+      <Web3Modal>
       <NextNProgress />
       <RainbowKitProvider
         chains={appChains.chains}
@@ -49,6 +51,7 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
         </div>
         <Toaster />
       </RainbowKitProvider>
+      </Web3Modal>
     </WagmiConfig>
   );
 };

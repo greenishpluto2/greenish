@@ -2,60 +2,74 @@ import Link from "next/link";
 import type { NextPage } from "next";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { MetaHeader } from "~~/components/MetaHeader";
+import React, { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
 
 const Home: NextPage = () => {
+  const [provider, setProvider] = useState(null);
+  const [signer, setSigner] = useState(null);
+  const [contract, setContract] = useState(null);
+  const [bets, setBets] = useState([]);
+
+  useEffect(() => {
+      if (window.ethereum) {
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          const contract = new ethers.Contract(contractAddress, contractABI, signer);
+          
+          setProvider(provider);
+          setSigner(signer);
+          setContract(contract);
+
+          // Load bets from the contract
+          loadBets();
+      }
+  }, []);
+
+  const loadBets = async () => {
+      setBets(bets);
+  };
+
+  const placeBet = async (betId, amount) => {
+      await contract.placeBet(betId, { value: ethers.utils.parseEther(amount) });
+  };
+
+  const withdrawWinnings = async (betId) => {
+      await contract.withdraw(betId);
+  };
+
+  const createSocialPool = async (description, isPrivate) => {
+      await contract.openBet(newBetId, description, isPrivate);
+  };
   return (
     <>
       <MetaHeader />
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center mb-8">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-          </h1>
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/pages/index.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
+      <div className="min-h-screen flex flex-col justify-center items-center">
+    <h1 className="text-4xl font-bold text-gray-800 mb-8">Betting App</h1>
+
+    <div className="space-y-4">
+        <button className="px-6 py-2 rounded bg-blue-500 text-white font-semibold hover:bg-blue-600">Bet on Pool A</button>
+        <button className="px-6 py-2 rounded bg-green-500 text-white font-semibold hover:bg-green-600">Bet on Pool B</button>
+        <button className="px-6 py-2 rounded bg-red-500 text-white font-semibold hover:bg-red-600">Bet on Pool C</button>
+    </div>
+
+    <div className="mt-8 space-y-4">
+        <button className="px-6 py-2 rounded bg-yellow-500 text-white font-semibold hover:bg-yellow-600">Withdraw Bets</button>
+        <button className="px-6 py-2 rounded bg-purple-500 text-white font-semibold hover:bg-purple-600">Create Social Pool</button>
+    </div>
+</div>
+
+<div>
+            {bets.map(bet => (
+                <div key={bet.id}>
+                    <h2>{bet.description}</h2>
+                    <button onClick={() => placeBet(bet.id, "0.1")}>Place Bet</button>
+                    <button onClick={() => withdrawWinnings(bet.id)}>Withdraw Winnings</button>
+                </div>
+            ))}
+            <button onClick={() => createSocialPool("Example Pool", true)}>Create Social Pool</button>
         </div>
 
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contract
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
     </>
   );
 };
